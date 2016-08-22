@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Gaurav on 8/16/2016.
@@ -22,6 +23,7 @@ public class CrimeListFragment extends Fragment {
 
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
+    private int position;
 
     @Nullable
     @Override
@@ -36,11 +38,24 @@ public class CrimeListFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
     private void updateUI() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
-        mAdapter = new CrimeAdapter(crimes);
-        mCrimeRecyclerView.setAdapter(mAdapter);
+
+        if (mAdapter == null) {
+            mAdapter = new CrimeAdapter(crimes);
+            mCrimeRecyclerView.setAdapter(mAdapter);
+        }
+        else {
+            mAdapter.notifyItemChanged(position);
+            Toast.makeText(getActivity(), "Updated position # " + position, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -69,8 +84,11 @@ public class CrimeListFragment extends Fragment {
         @Override
         public void onClick(View v) {
             Intent intent = CrimeActivity.newIntent(getActivity(), mCrime.getId());
+            position = getAdapterPosition();
             startActivity(intent);
         }
+
+
     }
 
     private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> {
@@ -104,5 +122,7 @@ public class CrimeListFragment extends Fragment {
         public int getItemCount() {
             return mCrimes.size();
         }
+
+
     }
 }
